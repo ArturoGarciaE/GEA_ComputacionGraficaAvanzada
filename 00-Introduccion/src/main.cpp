@@ -302,6 +302,12 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelCabania.loadModel("../models/cabania/cabaniaFachada.obj");
 	modelCabania.setShader(&shaderMulLighting);
 
+	//Carga y asignacion de shader para modelos del punto 1, practica 1	
+	modelTV.loadModel("../models/tv/tv.obj");
+	modelTV.setShader(&shaderMulLighting);
+	modelCabania.loadModel("../models/cabania/cabaniaFachada.obj");
+	modelCabania.setShader(&shaderMulLighting);
+
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
 	
 	// Carga de texturas para el skybox

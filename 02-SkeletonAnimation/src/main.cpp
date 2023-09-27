@@ -90,6 +90,13 @@ Model modelBuzzLeftArm;
 Model modelBuzzLeftForeArm;
 Model modelBuzzLeftHand;
 
+//modelo mayow
+Model modelMayow;
+//modelo bob 
+Model modelBob;
+//modelo cyrborg
+Model modelCyborg;
+
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
 
@@ -331,6 +338,16 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelBuzzLeftForeArm.setShader(&shaderMulLighting);
 	modelBuzzLeftHand.loadModel("../models/buzz/buzzlightyLeftHand.obj");
 	modelBuzzLeftHand.setShader(&shaderMulLighting);
+
+	//Modelo de mayown
+	modelMayow.loadModel("../models/mayow/personaje2.fbx");
+	modelMayow.setShader(&shaderMulLighting);
+	//Modelo de Bob
+	modelBob.loadModel("../models/Boblampclean/boblampclean.md5anim");
+	modelBob.setShader(&shaderMulLighting);
+	//Modelo de Cyborg
+	modelCyborg.loadModel("../models/cyborg/cyborg.fbx");
+	modelCyborg.setShader(&shaderMulLighting);
 
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
 	
