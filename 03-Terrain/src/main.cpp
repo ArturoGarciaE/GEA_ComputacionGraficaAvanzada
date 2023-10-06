@@ -104,7 +104,7 @@ Model cyborgModelAnimate;
 //Luchador caminando
 Model luchadorModelAnimateCaminando;
 //Terrain
-Terrain terrain(-1, -1, 200, 2, "../Textures/terrain2024-1.png");
+Terrain terrain(-1, -1, 200, 32, "../Textures/heightmap3.png");
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
@@ -190,6 +190,7 @@ float rotHelHelBack = 0.0;
 // Var animate lambo dor
 int stateDoor = 0;
 float dorRotCount = 0.0;
+float wheelRotRad = 0.0;
 
 double deltaTime;
 double currTime, lastTime;
@@ -673,7 +674,7 @@ bool processInput(bool continueApplication) {
 	if (enableCountSelected && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
 		enableCountSelected = false;
 		modelSelected++;
-		if(modelSelected > 4)
+		if(modelSelected > 6)
 			modelSelected = 0;
 		if(modelSelected == 1)
 			fileName = "../animaciones/animation_dart_joints.txt";
@@ -802,7 +803,7 @@ bool processInput(bool continueApplication) {
 		modelMatrixBuzz = glm::translate(modelMatrixBuzz, glm::vec3(0.0, 0.0, -0.02));
 
 	// Controles de mayow
-	/*if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
+	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
 		modelMatrixMayow = glm::rotate(modelMatrixMayow, 0.02f, glm::vec3(0, 1, 0));
 		animationMayowIndex = 0;
 	} else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
@@ -816,22 +817,38 @@ bool processInput(bool continueApplication) {
 	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
 		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0.0, 0.0, -0.02));
 		animationMayowIndex = 0;
-	}*/
+	}
 
-	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
+	if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
 		modelMatrixLuchadorCaminando = glm::rotate(modelMatrixLuchadorCaminando, 0.02f, glm::vec3(0, 1, 0));
 		animationLuchador = 0;
-	} else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
+	} else if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
 		modelMatrixLuchadorCaminando = glm::rotate(modelMatrixLuchadorCaminando, -0.02f, glm::vec3(0, 1, 0));
 		animationLuchador = 0;
 	}
-	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
+	if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
 		modelMatrixLuchadorCaminando = glm::translate(modelMatrixLuchadorCaminando, glm::vec3(0.0, 0.0, 0.02));
 		animationLuchador = 0;
 	}
-	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
+	else if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
 		modelMatrixLuchadorCaminando = glm::translate(modelMatrixLuchadorCaminando, glm::vec3(0.0, 0.0, -0.02));
 		animationLuchador = 0;
+	}
+
+	if (modelSelected == 6 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
+		modelMatrixLambo = glm::rotate(modelMatrixLambo, 0.02f, glm::vec3(0, 1, 0));
+		wheelRotRad += 1.0;
+	} else if (modelSelected == 6 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
+		modelMatrixLambo = glm::rotate(modelMatrixLambo, -0.02f, glm::vec3(0, 1, 0));
+		wheelRotRad += 1.0;
+	}
+	if (modelSelected == 6 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
+		modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(0.0, 0.0, 0.02));
+		wheelRotRad += 1.0;
+	}
+	else if (modelSelected == 6 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
+		modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(0.0, 0.0, -0.02));
+		wheelRotRad -= 1.0;
 	}
 
 	glfwPollEvents();
@@ -857,7 +874,7 @@ void applicationLoop() {
 
 	modelMatrixAircraft = glm::translate(modelMatrixAircraft, glm::vec3(10.0, 2.0, -17.5));
 
-	modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(23.0, 0.0, 0.0));
+	modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(23.0, 0.0, -8.0));
 
 	modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(3.0, 0.0, 20.0));
 
@@ -956,9 +973,9 @@ void applicationLoop() {
 		glBindTexture(GL_TEXTURE_2D, 0);*/
 
 		//Terrain rander
-		glBindTexture(GL_TEXTURE_2D, textureCespedID);
 		glActiveTexture(GL_TEXTURE0);
-		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(200.0f)));
+		glBindTexture(GL_TEXTURE_2D, textureCespedID);
+		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(100.0f)));
 		//terrain.enableWireMode();
 		terrain.setPosition(glm::vec3(100.0f,0.0f,100.0f));
 		terrain.render();
@@ -1011,8 +1028,18 @@ void applicationLoop() {
 
 		// Lambo car
 		glDisable(GL_CULL_FACE);
+		glm::vec3 ejeyLambo = glm::normalize(terrain.getNormalTerrain(modelMatrixLambo[3][0], modelMatrixLambo[3][2]));
+		glm::vec3 ejexLambo = glm::normalize(modelMatrixLambo[0]);
+		glm::vec3 ejezLambo = glm::normalize(glm::cross(ejexLambo, ejeyLambo));
+		ejexLambo = glm::normalize(glm::cross(ejeyLambo, ejezLambo));
+		modelMatrixLambo[0] = glm::vec4(ejexLambo,0.0f);
+		modelMatrixLambo[1] = glm::vec4(ejeyLambo,0.0f);
+		modelMatrixLambo[2] = glm::vec4(ejezLambo,0.0f);
+		modelMatrixLambo [3][1] = terrain.getHeightTerrain(modelMatrixLambo [3][0],modelMatrixLambo [3][2]);
+
 		glm::mat4 modelMatrixLamboChasis = glm::mat4(modelMatrixLambo);
 		modelMatrixLamboChasis = glm::scale(modelMatrixLamboChasis, glm::vec3(1.3, 1.3, 1.3));
+		
 		modelLambo.render(modelMatrixLamboChasis);
 		glActiveTexture(GL_TEXTURE0);
 		glm::mat4 modelMatrixLamboLeftDor = glm::mat4(modelMatrixLamboChasis);
@@ -1021,10 +1048,23 @@ void applicationLoop() {
 		modelMatrixLamboLeftDor = glm::translate(modelMatrixLamboLeftDor, glm::vec3(-1.08866, -0.705743, -0.968917));
 		modelLamboLeftDor.render(modelMatrixLamboLeftDor);
 		modelLamboRightDor.render(modelMatrixLamboChasis);
-		modelLamboFrontLeftWheel.render(modelMatrixLamboChasis);
-		modelLamboFrontRightWheel.render(modelMatrixLamboChasis);
-		modelLamboRearLeftWheel.render(modelMatrixLamboChasis);
-		modelLamboRearRightWheel.render(modelMatrixLamboChasis);
+
+		glm::mat4 modelMatrixLamboFrontWheel = glm::mat4(modelMatrixLamboChasis);
+		modelMatrixLamboFrontWheel = glm::translate(modelMatrixLamboFrontWheel, glm::vec3(0.0f, 0.4f, 1.39539f));
+		modelMatrixLamboFrontWheel = glm::rotate(modelMatrixLamboFrontWheel, glm::radians(wheelRotRad), glm::vec3(1.0,0.0,0.0));
+		modelMatrixLamboFrontWheel = glm::translate(modelMatrixLamboFrontWheel, glm::vec3(0.0f,-0.4f,-1.39539f));
+
+		modelLamboFrontLeftWheel.render(modelMatrixLamboFrontWheel);
+		modelLamboFrontRightWheel.render(modelMatrixLamboFrontWheel);
+
+		glm::mat4 modelMatrixLamboRearWheel = glm::mat4(modelMatrixLamboChasis);
+		modelMatrixLamboRearWheel = glm::translate(modelMatrixLamboRearWheel, glm::vec3(0.0f, 0.4f, -1.60065f));
+		modelMatrixLamboRearWheel = glm::rotate(modelMatrixLamboRearWheel, glm::radians(wheelRotRad), glm::vec3(1.0,0.0,0.0));
+		modelMatrixLamboRearWheel = glm::translate(modelMatrixLamboRearWheel, glm::vec3(0.0f,-0.4f, 1.60065f));
+
+		modelLamboRearLeftWheel.render(modelMatrixLamboRearWheel);
+		modelLamboRearRightWheel.render(modelMatrixLamboRearWheel);
+		
 		// Se regresa el cull faces IMPORTANTE para las puertas
 		glEnable(GL_CULL_FACE);
 
