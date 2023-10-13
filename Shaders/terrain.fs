@@ -62,7 +62,6 @@ uniform sampler2D textureG; // Textura asociada al color verde
 uniform sampler2D textureB; // Textura asociada al color azul
 uniform sampler2D textureBlendMap; // Textura definida en 4 colores primarios
 
-
 vec3 calculateDirectionalLight(Light light, vec3 direction){
 	vec2 tiledCoords = our_uv;
 	if(tiledCoords.x != 0 && tiledCoords.y != 0)

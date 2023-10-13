@@ -109,6 +109,8 @@ Model cowboyModelAnimate;
 Model guardianModelAnimate;
 // Cybog
 Model cyborgModelAnimate;
+//Luchador caminando
+Model luchadorModelAnimateCaminando;
 // Terrain model instance
 Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap.png");
 
@@ -147,8 +149,10 @@ glm::mat4 modelMatrixMayow = glm::mat4(1.0f);
 glm::mat4 modelMatrixCowboy = glm::mat4(1.0f);
 glm::mat4 modelMatrixGuardian = glm::mat4(1.0f);
 glm::mat4 modelMatrixCyborg = glm::mat4(1.0f);
+glm::mat4 modelMatrixLuchadorCaminando = glm::mat4(1.0f);
 
 int animationMayowIndex = 1;
+int animationLuchador = 1;
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
 float rotBuzzHead = 0.0, rotBuzzLeftarm = 0.0, rotBuzzLeftForeArm = 0.0, rotBuzzLeftHand = 0.0;
 int modelSelected = 0;
@@ -402,6 +406,10 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Terreno
 	terrain.init();
 	terrain.setShader(&shaderTerrain);
+
+	//Luchador caminando
+	luchadorModelAnimateCaminando.loadModel("../models/Luchador/luchador_camina.fbx");
+	luchadorModelAnimateCaminando.setShader(&shaderMulLighting);
 
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
 	
@@ -699,6 +707,8 @@ void destroy() {
 	modelLamp1.destroy();
 	modelLamp2.destroy();
 	modelLamp2Post.destroy();
+	luchadorModelAnimateCaminando.destroy();
+
 
 	// Terrains objects Delete
 	terrain.destroy();
@@ -783,7 +793,7 @@ bool processInput(bool continueApplication) {
 	if (enableCountSelected && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
 		enableCountSelected = false;
 		modelSelected++;
-		if(modelSelected > 4)
+		if(modelSelected > 5)
 			modelSelected = 0;
 		if(modelSelected == 1)
 			fileName = "../animaciones/animation_dart_joints.txt";
@@ -928,6 +938,21 @@ bool processInput(bool continueApplication) {
 		animationMayowIndex = 0;
 	}
 
+	if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
+		modelMatrixLuchadorCaminando = glm::rotate(modelMatrixLuchadorCaminando, 0.02f, glm::vec3(0, 1, 0));
+		animationLuchador = 0;
+	} else if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
+		modelMatrixLuchadorCaminando = glm::rotate(modelMatrixLuchadorCaminando, -0.02f, glm::vec3(0, 1, 0));
+		animationLuchador = 0;
+	}
+	if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
+		modelMatrixLuchadorCaminando = glm::translate(modelMatrixLuchadorCaminando, glm::vec3(0.0, 0.0, 0.02));
+		animationLuchador = 0;
+	}
+	else if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
+		modelMatrixLuchadorCaminando = glm::translate(modelMatrixLuchadorCaminando, glm::vec3(0.0, 0.0, -0.02));
+		animationLuchador = 0;
+	}
 	glfwPollEvents();
 	return continueApplication;
 }
@@ -966,6 +991,8 @@ void applicationLoop() {
 	modelMatrixGuardian = glm::rotate(modelMatrixGuardian, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
 
 	modelMatrixCyborg = glm::translate(modelMatrixCyborg, glm::vec3(5.0f, 0.05, 0.0f));
+
+	modelMatrixLuchadorCaminando = glm::translate(modelMatrixLuchadorCaminando, glm::vec3(3.0f, 0.0, -5.0f));
 
 	// Variables to interpolation key frames
 	fileName = "../animaciones/animation_dart_joints.txt";
@@ -1279,6 +1306,21 @@ void applicationLoop() {
 		modelMatrixCyborgBody = glm::scale(modelMatrixCyborgBody, glm::vec3(0.009f));
 		cyborgModelAnimate.setAnimationIndex(1);
 		cyborgModelAnimate.render(modelMatrixCyborgBody);
+
+		//Luchador
+		modelMatrixLuchadorCaminando[3][1] = terrain.getHeightTerrain(modelMatrixLuchadorCaminando[3][0], modelMatrixLuchadorCaminando[3][2]);
+		glm::vec3 ejeyLucha = glm::normalize(terrain.getNormalTerrain(modelMatrixLuchadorCaminando[3][0], modelMatrixLuchadorCaminando[3][2]));
+		glm::vec3 ejezLucha = glm::normalize(modelMatrixLuchadorCaminando[2]);
+		glm::vec3 ejexLucha = glm::normalize(glm::cross(ejeyLucha, ejezLucha));
+		ejez = glm::normalize(glm::cross(ejexLucha, ejeyLucha));
+		modelMatrixLuchadorCaminando[0] = glm::vec4(ejexLucha,0.0f);
+		modelMatrixLuchadorCaminando[1] = glm::vec4(ejeyLucha,0.0f);
+		modelMatrixLuchadorCaminando[2] = glm::vec4(ejezLucha,0.0f);
+		glm::mat4 modelMatrixLuchadorBody =glm::mat4 (modelMatrixLuchadorCaminando);
+		modelMatrixLuchadorBody = glm::scale(modelMatrixLuchadorBody, glm::vec3(0.015f));
+		luchadorModelAnimateCaminando.setAnimationIndex(animationLuchador);
+		luchadorModelAnimateCaminando.render(modelMatrixLuchadorBody);
+		animationLuchador = 1;
 
 		/*******************************************
 		 * Skybox
