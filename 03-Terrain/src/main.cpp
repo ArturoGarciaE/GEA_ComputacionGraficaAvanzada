@@ -69,7 +69,7 @@ Model modelEclipseRearWheels;
 Model modelEclipseFrontalWheels;
 Model modelHeliChasis;
 Model modelHeliHeli;
-Model modelHeliHeliBack;
+//Model modelHeliHeliBack;
 Model modelLambo;
 Model modelLamboLeftDor;
 Model modelLamboRightDor;
@@ -111,8 +111,9 @@ Model guardianModelAnimate;
 Model cyborgModelAnimate;
 //Luchador caminando
 Model luchadorModelAnimateCaminando;
-// Terrain model instance
-Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap.png");
+
+//Terrain
+Terrain terrain(-1, -1, 200, 32, "../Textures/heightmap3.png");
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint textureRID, textureGID, textureBID, textureBlendMapID;
@@ -199,6 +200,7 @@ float rotHelHelBack = 0.0;
 // Var animate lambo dor
 int stateDoor = 0;
 float dorRotCount = 0.0;
+float wheelRotRad = 0.0;
 
 std::vector<glm::vec3> lamp1Position = {
 	glm::vec3 (-7.03, 0, -19.14),
@@ -326,8 +328,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelHeliChasis.setShader(&shaderMulLighting);
 	modelHeliHeli.loadModel("../models/Helicopter/Mi_24_heli.obj");
 	modelHeliHeli.setShader(&shaderMulLighting);
-	modelHeliHeliBack.loadModel("../models/Helicopter/Mi_24_heli_back.obj");
-	modelHeliHeliBack.setShader(&shaderMulLighting);
+	//modelHeliHeliBack.loadModel("../models/Helicopter/Mi_24_heli_back.obj");
+	//modelHeliHeliBack.setShader(&shaderMulLighting);
 	// Lamborginhi
 	modelLambo.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_chasis.obj");
 	modelLambo.setShader(&shaderMulLighting);
@@ -686,7 +688,7 @@ void destroy() {
 	modelEclipseRearWheels.destroy();
 	modelHeliChasis.destroy();
 	modelHeliHeli.destroy();
-	modelHeliHeliBack.destroy();
+	//modelHeliHeliBack.destroy();
 	modelLambo.destroy();
 	modelLamboFrontLeftWheel.destroy();
 	modelLamboFrontRightWheel.destroy();
@@ -793,7 +795,7 @@ bool processInput(bool continueApplication) {
 	if (enableCountSelected && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
 		enableCountSelected = false;
 		modelSelected++;
-		if(modelSelected > 5)
+		if(modelSelected > 6)
 			modelSelected = 0;
 		if(modelSelected == 1)
 			fileName = "../animaciones/animation_dart_joints.txt";
@@ -953,6 +955,23 @@ bool processInput(bool continueApplication) {
 		modelMatrixLuchadorCaminando = glm::translate(modelMatrixLuchadorCaminando, glm::vec3(0.0, 0.0, -0.02));
 		animationLuchador = 0;
 	}
+
+	if (modelSelected == 6 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
+		modelMatrixLambo = glm::rotate(modelMatrixLambo, 0.02f, glm::vec3(0, 1, 0));
+		wheelRotRad += 1.0;
+	} else if (modelSelected == 6 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
+		modelMatrixLambo = glm::rotate(modelMatrixLambo, -0.02f, glm::vec3(0, 1, 0));
+		wheelRotRad += 1.0;
+	}
+	if (modelSelected == 6 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
+		modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(0.0, 0.0, 0.02));
+		wheelRotRad += 1.0;
+	}
+	else if (modelSelected == 6 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
+		modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(0.0, 0.0, -0.02));
+		wheelRotRad -= 1.0;
+	}
+
 	glfwPollEvents();
 	return continueApplication;
 }
@@ -976,7 +995,7 @@ void applicationLoop() {
 
 	modelMatrixAircraft = glm::translate(modelMatrixAircraft, glm::vec3(10.0, 2.0, -17.5));
 
-	modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(23.0, 0.0, 0.0));
+	modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(23.0, 0.0, -8.0));
 
 	modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(3.0, 0.0, 20.0));
 
@@ -1100,6 +1119,18 @@ void applicationLoop() {
 		shaderTerrain.setInt("textureBlendMap", 4); // Unidad de textura
 		shaderTerrain.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(80, 80)));
 		terrain.setPosition(glm::vec3(100, 0, 100));
+/*=======
+		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(200, 200)));
+		boxCesped.render(modelCesped);
+		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(0, 0)));
+		glBindTexture(GL_TEXTURE_2D, 0);*/
+
+		//Terrain rander
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureCespedID);
+		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(100.0f)));
+		//terrain.enableWireMode();
+		terrain.setPosition(glm::vec3(100.0f,0.0f,100.0f));
 		terrain.render();
 		shaderTerrain.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(0, 0)));
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -1145,17 +1176,27 @@ void applicationLoop() {
 		modelMatrixHeliHeli = glm::rotate(modelMatrixHeliHeli, rotHelHelY, glm::vec3(0, 1, 0));
 		modelMatrixHeliHeli = glm::translate(modelMatrixHeliHeli, glm::vec3(0.0, 0.0, 0.249548));
 		modelHeliHeli.render(modelMatrixHeliHeli);
-		glm::mat4 modelMatrixHeliHeliBack = glm::mat4(modelMatrixHeliChasis);
+		/*glm::mat4 modelMatrixHeliHeliBack = glm::mat4(modelMatrixHeliChasis);
 		modelMatrixHeliHeliBack = glm::translate(modelMatrixHeliHeliBack, glm::vec3(0.400524, 2.0928, -5.64124));
 		modelMatrixHeliHeliBack = glm::rotate(modelMatrixHeliHeliBack, rotHelHelBack, glm::vec3(1.0, 0.0, 0.0));
 		modelMatrixHeliHeliBack = glm::translate(modelMatrixHeliHeliBack, glm::vec3(-0.400524, -2.0928, 5.64124));
-		modelHeliHeliBack.render(modelMatrixHeliHeliBack);
+		modelHeliHeliBack.render(modelMatrixHeliHeliBack);*/
 
 		// Lambo car
 		glDisable(GL_CULL_FACE);
+		glm::vec3 ejeyLambo = glm::normalize(terrain.getNormalTerrain(modelMatrixLambo[3][0], modelMatrixLambo[3][2]));
+		glm::vec3 ejexLambo = glm::normalize(modelMatrixLambo[0]);
+		glm::vec3 ejezLambo = glm::normalize(glm::cross(ejexLambo, ejeyLambo));
+		ejexLambo = glm::normalize(glm::cross(ejeyLambo, ejezLambo));
+		modelMatrixLambo[0] = glm::vec4(ejexLambo,0.0f);
+		modelMatrixLambo[1] = glm::vec4(ejeyLambo,0.0f);
+		modelMatrixLambo[2] = glm::vec4(ejezLambo,0.0f);
+		modelMatrixLambo [3][1] = terrain.getHeightTerrain(modelMatrixLambo [3][0],modelMatrixLambo [3][2]);
+
 		glm::mat4 modelMatrixLamboChasis = glm::mat4(modelMatrixLambo);
 		modelMatrixLamboChasis[3][1] = terrain.getHeightTerrain(modelMatrixLamboChasis[3][0], modelMatrixLamboChasis[3][2]);
 		modelMatrixLamboChasis = glm::scale(modelMatrixLamboChasis, glm::vec3(1.3, 1.3, 1.3));
+		
 		modelLambo.render(modelMatrixLamboChasis);
 		glActiveTexture(GL_TEXTURE0);
 		glm::mat4 modelMatrixLamboLeftDor = glm::mat4(modelMatrixLamboChasis);
@@ -1164,10 +1205,23 @@ void applicationLoop() {
 		modelMatrixLamboLeftDor = glm::translate(modelMatrixLamboLeftDor, glm::vec3(-1.08866, -0.705743, -0.968917));
 		modelLamboLeftDor.render(modelMatrixLamboLeftDor);
 		modelLamboRightDor.render(modelMatrixLamboChasis);
-		modelLamboFrontLeftWheel.render(modelMatrixLamboChasis);
-		modelLamboFrontRightWheel.render(modelMatrixLamboChasis);
-		modelLamboRearLeftWheel.render(modelMatrixLamboChasis);
-		modelLamboRearRightWheel.render(modelMatrixLamboChasis);
+
+		glm::mat4 modelMatrixLamboFrontWheel = glm::mat4(modelMatrixLamboChasis);
+		modelMatrixLamboFrontWheel = glm::translate(modelMatrixLamboFrontWheel, glm::vec3(0.0f, 0.4f, 1.39539f));
+		modelMatrixLamboFrontWheel = glm::rotate(modelMatrixLamboFrontWheel, glm::radians(wheelRotRad), glm::vec3(1.0,0.0,0.0));
+		modelMatrixLamboFrontWheel = glm::translate(modelMatrixLamboFrontWheel, glm::vec3(0.0f,-0.4f,-1.39539f));
+
+		modelLamboFrontLeftWheel.render(modelMatrixLamboFrontWheel);
+		modelLamboFrontRightWheel.render(modelMatrixLamboFrontWheel);
+
+		glm::mat4 modelMatrixLamboRearWheel = glm::mat4(modelMatrixLamboChasis);
+		modelMatrixLamboRearWheel = glm::translate(modelMatrixLamboRearWheel, glm::vec3(0.0f, 0.4f, -1.60065f));
+		modelMatrixLamboRearWheel = glm::rotate(modelMatrixLamboRearWheel, glm::radians(wheelRotRad), glm::vec3(1.0,0.0,0.0));
+		modelMatrixLamboRearWheel = glm::translate(modelMatrixLamboRearWheel, glm::vec3(0.0f,-0.4f, 1.60065f));
+
+		modelLamboRearLeftWheel.render(modelMatrixLamboRearWheel);
+		modelLamboRearRightWheel.render(modelMatrixLamboRearWheel);
+		
 		// Se regresa el cull faces IMPORTANTE para las puertas
 		glEnable(GL_CULL_FACE);
 

@@ -50,7 +50,7 @@ Shader shader;
 Shader shaderSkybox;
 //Shader con multiples luces
 Shader shaderMulLighting;
-// Shader terreno
+//Shader para el terreno
 Shader shaderTerrain;
 
 std::shared_ptr<FirstPersonCamera> camera(new FirstPersonCamera());
@@ -94,12 +94,6 @@ Model modelBuzzHead;
 Model modelBuzzLeftArm;
 Model modelBuzzLeftForeArm;
 Model modelBuzzLeftHand;
-
-//Lamps
-Model modelLamp1;
-Model modelLamp2;
-Model modelLamp2Post;
-
 // Modelos animados
 // Mayow
 Model mayowModelAnimate;
@@ -109,13 +103,11 @@ Model cowboyModelAnimate;
 Model guardianModelAnimate;
 // Cybog
 Model cyborgModelAnimate;
-//Luchador caminando
-Model luchadorModelAnimateCaminando;
 // Terrain model instance
-Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap-2024-1.png");
+Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap.png");
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
-GLuint textureRID, textureGID, textureBID, textureBlendMapID;
+GLuint textureTerrainRID, textureTerrainGID, textureTerrainBID, textureTerrainBlendMapID;
 GLuint skyboxTextureID;
 
 GLenum types[6] = {
@@ -149,10 +141,8 @@ glm::mat4 modelMatrixMayow = glm::mat4(1.0f);
 glm::mat4 modelMatrixCowboy = glm::mat4(1.0f);
 glm::mat4 modelMatrixGuardian = glm::mat4(1.0f);
 glm::mat4 modelMatrixCyborg = glm::mat4(1.0f);
-glm::mat4 modelMatrixLuchadorCaminando = glm::mat4(1.0f);
 
 int animationMayowIndex = 1;
-int animationLuchador = 1;
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
 float rotBuzzHead = 0.0, rotBuzzLeftarm = 0.0, rotBuzzLeftForeArm = 0.0, rotBuzzLeftHand = 0.0;
 int modelSelected = 0;
@@ -199,18 +189,6 @@ float rotHelHelBack = 0.0;
 // Var animate lambo dor
 int stateDoor = 0;
 float dorRotCount = 0.0;
-
-std::vector<glm::vec3> lamp1Position = {
-	glm::vec3 (-7.03, 0, -19.14),
-	glm::vec3 (24.41, 0, -34.57),
-	glm::vec3 (-10.15, 0, -54.10)
-};
-std::vector<float> lamp1Orientation = {
-	-17.0, -82.67, 23.7
-};
-
-std::vector<glm::vec3> lamp2Position ={};
-std::vector<float> lamp2Orientation = {};
 
 double deltaTime;
 double currTime, lastTime;
@@ -286,7 +264,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	shader.initialize("../Shaders/colorShader.vs", "../Shaders/colorShader.fs");
 	shaderSkybox.initialize("../Shaders/skyBox.vs", "../Shaders/skyBox.fs");
 	shaderMulLighting.initialize("../Shaders/iluminacion_textura_animation.vs", "../Shaders/multipleLights.fs");
-	shaderTerrain.initialize("../Shaders/terrain.vs","../Shaders/terrain.fs");
+	shaderTerrain.initialize("../Shaders/terrain.vs", "../Shaders/terrain.fs");
 
 	// Inicializacion de los objetos.
 	skyboxSphere.init();
@@ -377,16 +355,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelBuzzLeftHand.loadModel("../models/buzz/buzzlightyLeftHand.obj");
 	modelBuzzLeftHand.setShader(&shaderMulLighting);
 
-	//Lamp model
-	modelLamp1.loadModel("../models/Street-Lamp-Black/objLamp.obj");
-	modelLamp1.setShader(&shaderMulLighting);
-
-	modelLamp2.loadModel("../models/Street_Light/Lamp.obj");
-	modelLamp2.setShader(&shaderMulLighting);
-	modelLamp2Post.loadModel("../models/Street_Light/LampPost.obj");
-	modelLamp2Post.setShader(&shaderMulLighting);
-
-
 	// Mayow
 	mayowModelAnimate.loadModel("../models/mayow/personaje2.fbx");
 	mayowModelAnimate.setShader(&shaderMulLighting);
@@ -406,10 +374,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Terreno
 	terrain.init();
 	terrain.setShader(&shaderTerrain);
-
-	//Luchador caminando
-	luchadorModelAnimateCaminando.loadModel("../models/Luchador/luchador_camina.fbx");
-	luchadorModelAnimateCaminando.setShader(&shaderMulLighting);
 
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
 	
@@ -571,11 +535,12 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		std::cout << "Fallo la carga de textura" << std::endl;
 	textureLandingPad.freeImage(); // Liberamos memoria
 
-	//Texturas de blendmapping -- Rojo
+	// Defininiendo texturas del mapa de mezclas
+	// Definiendo la textura
 	Texture textureR("../Textures/mud.png");
 	textureR.loadImage(); // Cargar la textura
-	glGenTextures(1, &textureRID); // Creando el id de la textura del landingpad
-	glBindTexture(GL_TEXTURE_2D, textureRID); // Se enlaza la textura
+	glGenTextures(1, &textureTerrainRID); // Creando el id de la textura del landingpad
+	glBindTexture(GL_TEXTURE_2D, textureTerrainRID); // Se enlaza la textura
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrapping en el eje u
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Wrapping en el eje v
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Filtering de minimización
@@ -590,12 +555,11 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		std::cout << "Fallo la carga de textura" << std::endl;
 	textureR.freeImage(); // Liberamos memoria
 
-
-	//Texturas de blendmapping -- Verde
+	// Definiendo la textura
 	Texture textureG("../Textures/grassFlowers.png");
 	textureG.loadImage(); // Cargar la textura
-	glGenTextures(1, &textureGID); // Creando el id de la textura del landingpad
-	glBindTexture(GL_TEXTURE_2D, textureGID); // Se enlaza la textura
+	glGenTextures(1, &textureTerrainGID); // Creando el id de la textura del landingpad
+	glBindTexture(GL_TEXTURE_2D, textureTerrainGID); // Se enlaza la textura
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrapping en el eje u
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Wrapping en el eje v
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Filtering de minimización
@@ -610,11 +574,11 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		std::cout << "Fallo la carga de textura" << std::endl;
 	textureG.freeImage(); // Liberamos memoria
 
-	//Texturas de blendmapping -- Azul
+	// Definiendo la textura
 	Texture textureB("../Textures/path.png");
 	textureB.loadImage(); // Cargar la textura
-	glGenTextures(1, &textureBID); // Creando el id de la textura del landingpad
-	glBindTexture(GL_TEXTURE_2D, textureBID); // Se enlaza la textura
+	glGenTextures(1, &textureTerrainBID); // Creando el id de la textura del landingpad
+	glBindTexture(GL_TEXTURE_2D, textureTerrainBID); // Se enlaza la textura
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrapping en el eje u
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Wrapping en el eje v
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Filtering de minimización
@@ -629,16 +593,16 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		std::cout << "Fallo la carga de textura" << std::endl;
 	textureB.freeImage(); // Liberamos memoria
 
-	//Texturas de blendmapping -- Azul
-	Texture textureBlendMap("../Textures/blendMap-2024-1.png");
+	// Definiendo la textura
+	Texture textureBlendMap("../Textures/blendMap.png");
 	textureBlendMap.loadImage(); // Cargar la textura
-	glGenTextures(1, &textureBlendMapID); // Creando el id de la textura del landingpad
-	glBindTexture(GL_TEXTURE_2D, textureBlendMapID); // Se enlaza la textura
+	glGenTextures(1, &textureTerrainBlendMapID); // Creando el id de la textura del landingpad
+	glBindTexture(GL_TEXTURE_2D, textureTerrainBlendMapID); // Se enlaza la textura
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrapping en el eje u
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Wrapping en el eje v
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Filtering de minimización
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Filtering de maximimizacion
-	if(textureB.getData()){
+	if(textureBlendMap.getData()){
 		// Transferir los datos de la imagen a la tarjeta
 		glTexImage2D(GL_TEXTURE_2D, 0, textureBlendMap.getChannels() == 3 ? GL_RGB : GL_RGBA, textureBlendMap.getWidth(), textureBlendMap.getHeight(), 0,
 		textureBlendMap.getChannels() == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, textureBlendMap.getData());
@@ -704,11 +668,6 @@ void destroy() {
 	cowboyModelAnimate.destroy();
 	guardianModelAnimate.destroy();
 	cyborgModelAnimate.destroy();
-	modelLamp1.destroy();
-	modelLamp2.destroy();
-	modelLamp2Post.destroy();
-	luchadorModelAnimateCaminando.destroy();
-
 
 	// Terrains objects Delete
 	terrain.destroy();
@@ -720,10 +679,10 @@ void destroy() {
 	glDeleteTextures(1, &textureWindowID);
 	glDeleteTextures(1, &textureHighwayID);
 	glDeleteTextures(1, &textureLandingPadID);
-	glDeleteTextures(1, &textureRID);
-	glDeleteTextures(1, &textureGID);
-	glDeleteTextures(1, &textureBID);
-	glDeleteTextures(1, &textureBlendMapID);
+	glDeleteTextures(1, &textureTerrainBID);
+	glDeleteTextures(1, &textureTerrainGID);
+	glDeleteTextures(1, &textureTerrainRID);
+	glDeleteTextures(1, &textureTerrainBlendMapID);
 
 	// Cube Maps Delete
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
@@ -793,7 +752,7 @@ bool processInput(bool continueApplication) {
 	if (enableCountSelected && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
 		enableCountSelected = false;
 		modelSelected++;
-		if(modelSelected > 5)
+		if(modelSelected > 4)
 			modelSelected = 0;
 		if(modelSelected == 1)
 			fileName = "../animaciones/animation_dart_joints.txt";
@@ -938,21 +897,6 @@ bool processInput(bool continueApplication) {
 		animationMayowIndex = 0;
 	}
 
-	if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
-		modelMatrixLuchadorCaminando = glm::rotate(modelMatrixLuchadorCaminando, 0.02f, glm::vec3(0, 1, 0));
-		animationLuchador = 0;
-	} else if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
-		modelMatrixLuchadorCaminando = glm::rotate(modelMatrixLuchadorCaminando, -0.02f, glm::vec3(0, 1, 0));
-		animationLuchador = 0;
-	}
-	if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
-		modelMatrixLuchadorCaminando = glm::translate(modelMatrixLuchadorCaminando, glm::vec3(0.0, 0.0, 0.02));
-		animationLuchador = 0;
-	}
-	else if (modelSelected == 5 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-		modelMatrixLuchadorCaminando = glm::translate(modelMatrixLuchadorCaminando, glm::vec3(0.0, 0.0, -0.02));
-		animationLuchador = 0;
-	}
 	glfwPollEvents();
 	return continueApplication;
 }
@@ -991,8 +935,6 @@ void applicationLoop() {
 	modelMatrixGuardian = glm::rotate(modelMatrixGuardian, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
 
 	modelMatrixCyborg = glm::translate(modelMatrixCyborg, glm::vec3(5.0f, 0.05, 0.0f));
-
-	modelMatrixLuchadorCaminando = glm::translate(modelMatrixLuchadorCaminando, glm::vec3(3.0f, 0.0, -5.0f));
 
 	// Variables to interpolation key frames
 	fileName = "../animaciones/animation_dart_joints.txt";
@@ -1039,10 +981,9 @@ void applicationLoop() {
 					glm::value_ptr(projection));
 		shaderMulLighting.setMatrix4("view", 1, false,
 				glm::value_ptr(view));
-
 		// Settea la matriz de vista y projection al shader con multiples luces
 		shaderTerrain.setMatrix4("projection", 1, false,
-					glm::value_ptr(projection));
+				glm::value_ptr(projection));
 		shaderTerrain.setMatrix4("view", 1, false,
 				glm::value_ptr(view));
 
@@ -1065,39 +1006,33 @@ void applicationLoop() {
 		 * Propiedades SpotLights
 		 *******************************************/
 		shaderMulLighting.setInt("spotLightCount", 0);
-
 		shaderTerrain.setInt("spotLightCount", 0);
 
 		/*******************************************
 		 * Propiedades PointLights
 		 *******************************************/
 		shaderMulLighting.setInt("pointLightCount", 0);
-
 		shaderTerrain.setInt("pointLightCount", 0);
 
 		/*******************************************
 		 * Terrain Cesped
 		 *******************************************/
-		// glm::mat4 modelCesped = glm::mat4(1.0);
-		// modelCesped = glm::translate(modelCesped, glm::vec3(0.0, 0.0, 0.0));
-		// modelCesped = glm::scale(modelCesped, glm::vec3(200.0, 0.001, 200.0));
-		
 		// Se activa la textura del agua
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureCespedID);
-		shaderTerrain.setInt("backgroundTexture", 0); // Unidad de textura
+		shaderTerrain.setInt("backgroundTexture", 0);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, textureRID);
-		shaderTerrain.setInt("textureR", 1); // Unidad de textura
+		glBindTexture(GL_TEXTURE_2D, textureTerrainRID);
+		shaderTerrain.setInt("rTexture", 1);
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, textureGID);
-		shaderTerrain.setInt("textureG", 2); // Unidad de textura
+		glBindTexture(GL_TEXTURE_2D, textureTerrainGID);
+		shaderTerrain.setInt("gTexture", 2);
 		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, textureBID);
-		shaderTerrain.setInt("textureB", 3); // Unidad de textura
+		glBindTexture(GL_TEXTURE_2D, textureTerrainBID);
+		shaderTerrain.setInt("bTexture", 3);
 		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, textureBlendMapID);
-		shaderTerrain.setInt("textureBlendMap", 4); // Unidad de textura
+		glBindTexture(GL_TEXTURE_2D, textureTerrainBlendMapID);
+		shaderTerrain.setInt("blendMapTexture", 4);
 		shaderTerrain.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(80, 80)));
 		terrain.setPosition(glm::vec3(100, 0, 100));
 		terrain.render();
@@ -1170,26 +1105,6 @@ void applicationLoop() {
 		modelLamboRearRightWheel.render(modelMatrixLamboChasis);
 		// Se regresa el cull faces IMPORTANTE para las puertas
 		glEnable(GL_CULL_FACE);
-
-		//Render lamps
-		for(int i = 0; i< lamp1Position.size(); i++){
-			lamp1Position[i].y =  terrain.getHeightTerrain(lamp1Position[i].x, lamp1Position[i].z);
-			modelLamp1.setPosition(lamp1Position[i]);
-			modelLamp1.setScale(glm::vec3(0.5));
-			modelLamp1.setOrientation(glm::vec3(0, lamp1Orientation[i],0));
-			modelLamp1.render();
-		}
-		for(int i = 0; i< lamp2Position.size(); i++){
-			lamp2Position[i].y = terrain.getHeightTerrain(lamp2Position[i].x, lamp2Position[i].z);
-			modelLamp2.setPosition(lamp2Position[i]);
-			modelLamp2.setScale(glm::vec3(0.5));
-			modelLamp2.setOrientation(glm::vec3(0, lamp2Orientation[i],0));
-			modelLamp2.render();
-			modelLamp2Post.setPosition(lamp2Position[i]);
-			modelLamp2Post.setScale(glm::vec3(0.5));
-			modelLamp2Post.setOrientation(glm::vec3(0, lamp2Orientation[i],0));
-			modelLamp2Post.render();
-		}
 
 		// Dart lego
 		// Se deshabilita el cull faces IMPORTANTE para la capa
@@ -1306,21 +1221,6 @@ void applicationLoop() {
 		modelMatrixCyborgBody = glm::scale(modelMatrixCyborgBody, glm::vec3(0.009f));
 		cyborgModelAnimate.setAnimationIndex(1);
 		cyborgModelAnimate.render(modelMatrixCyborgBody);
-
-		//Luchador
-		modelMatrixLuchadorCaminando[3][1] = terrain.getHeightTerrain(modelMatrixLuchadorCaminando[3][0], modelMatrixLuchadorCaminando[3][2]);
-		glm::vec3 ejeyLucha = glm::normalize(terrain.getNormalTerrain(modelMatrixLuchadorCaminando[3][0], modelMatrixLuchadorCaminando[3][2]));
-		glm::vec3 ejezLucha = glm::normalize(modelMatrixLuchadorCaminando[2]);
-		glm::vec3 ejexLucha = glm::normalize(glm::cross(ejeyLucha, ejezLucha));
-		ejez = glm::normalize(glm::cross(ejexLucha, ejeyLucha));
-		modelMatrixLuchadorCaminando[0] = glm::vec4(ejexLucha,0.0f);
-		modelMatrixLuchadorCaminando[1] = glm::vec4(ejeyLucha,0.0f);
-		modelMatrixLuchadorCaminando[2] = glm::vec4(ejezLucha,0.0f);
-		glm::mat4 modelMatrixLuchadorBody =glm::mat4 (modelMatrixLuchadorCaminando);
-		modelMatrixLuchadorBody = glm::scale(modelMatrixLuchadorBody, glm::vec3(0.015f));
-		luchadorModelAnimateCaminando.setAnimationIndex(animationLuchador);
-		luchadorModelAnimateCaminando.render(modelMatrixLuchadorBody);
-		animationLuchador = 1;
 
 		/*******************************************
 		 * Skybox
