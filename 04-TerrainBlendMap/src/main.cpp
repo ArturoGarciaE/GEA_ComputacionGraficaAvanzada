@@ -112,7 +112,7 @@ Model cyborgModelAnimate;
 //Luchador caminando
 Model luchadorModelAnimateCaminando;
 // Terrain model instance
-Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap-2024-1.png");
+Terrain terrain(-1, -1, 200, 10, "../Textures/heightmap3.png");
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint textureRID, textureGID, textureBID, textureBlendMapID;
@@ -408,7 +408,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	terrain.setShader(&shaderTerrain);
 
 	//Luchador caminando
-	luchadorModelAnimateCaminando.loadModel("../models/Luchador/luchador_camina.fbx");
+	luchadorModelAnimateCaminando.loadModel("../models/Luchador/luchador_descansa.fbx");
 	luchadorModelAnimateCaminando.setShader(&shaderMulLighting);
 
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
