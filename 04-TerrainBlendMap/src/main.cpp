@@ -209,8 +209,13 @@ std::vector<float> lamp1Orientation = {
 	-17.0, -82.67, 23.7
 };
 
-std::vector<glm::vec3> lamp2Position ={};
-std::vector<float> lamp2Orientation = {};
+std::vector<glm::vec3> lamp2Position ={
+	glm::vec3 (-2.03, 0, -19.14),
+	glm::vec3 (22.41, 0, -34.57)
+};
+std::vector<float> lamp2Orientation = {
+	21.37 + 90, -65.0 + 90
+};
 
 double deltaTime;
 double currTime, lastTime;
@@ -1182,11 +1187,11 @@ void applicationLoop() {
 		for(int i = 0; i< lamp2Position.size(); i++){
 			lamp2Position[i].y = terrain.getHeightTerrain(lamp2Position[i].x, lamp2Position[i].z);
 			modelLamp2.setPosition(lamp2Position[i]);
-			modelLamp2.setScale(glm::vec3(0.5));
-			modelLamp2.setOrientation(glm::vec3(0, lamp2Orientation[i],0));
+			modelLamp2.setScale(glm::vec3(0.75));
+			//modelLamp2.setOrientation(glm::vec3(0, lamp2Orientation[i],0));
 			modelLamp2.render();
 			modelLamp2Post.setPosition(lamp2Position[i]);
-			modelLamp2Post.setScale(glm::vec3(0.5));
+			modelLamp2Post.setScale(glm::vec3(0.75));
 			modelLamp2Post.setOrientation(glm::vec3(0, lamp2Orientation[i],0));
 			modelLamp2Post.render();
 		}

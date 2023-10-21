@@ -26,8 +26,8 @@
   #endif
 #endif
 
-#define SPEED 3.0f
-#define SENSITIVTY 25.0f
+#define SPEED 6.0f
+#define SENSITIVTY 35.0f
 
 #define _USE_MATH_DEFINES
 #include <cmath>
